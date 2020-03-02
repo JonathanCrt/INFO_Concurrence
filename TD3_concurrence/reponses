@@ -1,0 +1,42 @@
+##### Exercice 1  ######
+
+1 - On corrige le problème en ajoutant des blocs synchronized.
+
+2 - Il doit être private final (modificateurs),
+	C'est un objet qui ne doit pas utiliser d'internings,
+
+3 - On développe la classe ThreadSafelist (voir code)
+
+4 - On redéfinie ma méthode toString (annotation override) et on 
+	utilise l'API des stream pour collecter et afficher tous les éléments 
+	de la liste (voir code).
+
+##### Exercice 2  ######
+
+1 - La classe n'est pas thread-safe car les méthodes  toString() et set() ne sont pas synchronized
+Un thread peut être déschulé en plein milieu de la méthode set(...) 
+Il y a trois threads et une  data-race sur les champs firstname et lastname.
+Du coup il y a un possible alternance des prenoms/noms (combinaisons) ->
+		 -- t1 set le champ le prénom et nom, il est déschédulé  : John Doe
+		 -- t2 set le prénom puis il est déschédulé              : Jane Doe
+		 -- t3  affiche Jane Doe
+
+2 - Voir code.
+
+3- Non on ne peut pas remplacer cette ligne par un system.out.println(...) appellant des getters. En effet il n'y a 
+pas de synchronisation ! on "get" le prénom à instant t,  et comme on a possiblement laché le lock, on affiche 
+le mauvais prénom (il peuvent être modifiés). Il nous faut donc un lock dans la méthode toString().
+
+##### Exercice 3  ######
+
+1 - A l'exécution on nous comprend de manière naive que  on nous affiche un nombre premier trouvé par un thread.
+
+2 - JIT optimise le code, du coup la valeur de value  n'est pas relue, du coup on ne sort jamais de la boucle (la valeur est tojours à null).
+
+3 - Voir code
+A l'exécution on passe forcément dans le bloc synchronized {}
+
+4 - us: Charge processeur demandée
+Avant l'exécution du programme FindPrime la charge processeur demandée est égale à  36.3 %
+Cependant à l'exécution, on remarque que la charge processeur demandé augmente à 97.0 %
+C'est énorme, et il s'agit de la conséquence de l'écoute active et le CPU tourne en boucle !

@@ -1,0 +1,107 @@
+Exemple de rédaction : 
+
+Supposons que la valeur vaut 1 et que t1 et t2 veut exécuter “valeur +1”.
+Si t2 lit la valeur de value(1) et est déschedulé
+t2 lit la valeur de value (1), l’incrémente et l’écrit en mémoire. Donc value vaut ? 
+Le thread est reschedulé, il incrémente la valeur (2) et l’écrit en mémoire (2). 
+
+
+#################################  Exercice 0 #####################################
+
+1) Les valeurs obtenues sont toutes différentes et supérieures
+à 10_000.En mémoire, le champ value vaut 10_000 (la résultat varie à chaque éxécution)
+---
+
+2) La valeur de value est 0. La thread 1 lit cette valeur et il est déschedulé. Le thread2 est schédulé et 
+il termine son runnable. Donc la valeur de value est 10_000 
+Le thread t1 est reschedulé et il vaut la valeur 1. 
+Puis il termine son runnable et à la fin value vaut 10000.
+----
+
+3) On ne pourra jamais avoir moins de 10_000, démontrons le avec un cas possible:
+
+--> Si t1 lit en mémoire 0, il incrémente et écrit en mémoire 3000 (par exemple).
+t1 est déschédulé.
+--> t2 est schédulé, lit 3000 sur le tas et incrémente jusqu'a 5000. Il est déschédulé.
+--> t1 est re-schédulé. il lit 3000 en mémoire, incrémente et stocke 10_000 en mémoire.
+--> t2 est re-schédulé et "écrase" et écrit 5000 en mémoire. Il incrémente en imaginant qu'il reste 8000 tour de boucles.
+t2 écrit en mémoire 13_000
+--> t2 est déschédulé.
+--> la JVM s'arrete si tous les threads sont morts
+
+Conclusion : 
+En fin de compte, 10_000 est le minimum possible en mémoire quoi qu'il arrive(le processus arrivera à son terme). 
+Si un thread est déschedulé alors qu'il a déjà lu la valeur, alors on perd la valeur de value qui à été mise à jour
+(l'incrémentation n'est pas une opération atomique)
+
+
+
+#################################  Exercice 1 #####################################
+Arréter le thread à la main.
+
+1) La data-race (zone mémoire partagée par deux thread) est stop. En effet, Le main et le thread essaie d'écrire le stop.
+
+
+2) On a aucun contrôle sur l'ordre d'éxécution des threads.
+
+
+3) println (E/S) est une opération lente. Le JIT attend un certain nombre de boucles pour optimiser (l'optimisation coûte cher)
+Ici, Le JIT a optimisé le code. il créer une variable locale stop intialisée à false, comme la variable est toujours à false,
+on se sort jamais de la boucle. on doit donc arrêter le thread (implémentant Runnable) à la main
+A contrario,  iol n'y a pas d'optimisation de JIT 
+
+4) Pas forcément, on ne sait pas comment le scheduler va se comporter.
+
+#################################  Exercice 2 #####################################
+
+1)  
+a = 0 b = 0 -> Le main s'est éxécuté en entier, le main puis le thread
+a = 1 b = 2 -> Le thread puis main
+a = 1 b = 0 -> Le main jusqu'a après a = 1 puis thread
+a = 0 b = 2 -> Le JIT  à changé l'odre des affectation  main jusqu'a b = 2 puis thread
+
+2) On observe une data-race sur le champ l.
+L'affectation se fait en deux étapes ce qui peut etre interrompu avec le scheduler.
+Long signifie potentielemment deux opérations (Pas atomique).
+
+Valeurs possibles : 
+FFFF FFFF
+0000 FFFF
+FFFF 0000
+0000 0000
+
+#################################  Exercice 3 #####################################
+
+1) On modifie le code
+...
+var list = new ArrayList<Integer>(5000 * nbThreads);
+...
+list.add(i *nbThreads);
+...
+
+2) On note les différents affichages sur 4 exécutions : 
+--> 19037
+--> 20000
+--> 9229
+-->	13655
+
+3) La variable size de ArrayList 
+On a un problème de data-race 
+C'est globalement le même problème que pour l'incrémentation
+
+Imaginons un cas spécifique: 
+
+Deux threads t1 et t2 sont en exécution et appellent la méthode add de ArrayList
+-- thread 1  récupère le prochain index libre de la liste --> index 0
+/// Le thread 1 est deschedulé, on passe au thread 2 ///
+-- thread 2 récupère le prochain l'index libre de la liste -> index 0 
+(le même qu'a récupéré le thread 1, car ce dernier n'a pas eu le temps de mettre quelque chose dedans  car il vient 
+d'être deschedulé)
+-- thread 2 --> ajoute l'Integer dans la liste à l'index 0
+/// le thread 2 est deschedulé, on passe au thread 1 ///
+-- thread 1 --> ajoute l'Integer dans la liste à l'index 0 (et écrase du coup la valeur qu'avait ajoutée thread 2)
+
+On observe donc que la liste à une taille de longueur 1  alors que la méthode add(...) a été appelée 2 fois
+
+
+4) Une Exception ArrayIndexOutOfBoundsException est lévée car on a dépassé la taille du tableau 

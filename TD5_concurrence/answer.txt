@@ -1,0 +1,57 @@
+############# Exercice 1 - Exchanger ##################
+
+-- Comment faire pour distinguer le premier et le second appel  la méthode exchange ?
+
+Si la valeur stockee est nulle il s agit du premier appel, sinon il s'agit du second appel.
+
+
+-- écrire le code de la classe Exchanger.
+
+Voir Code. Les deux booleans symbolisent l'etat de la fonction.
+
+-- Modifier votre méthode d'échange pour encoder l'état de l'Exchanger avec un enum.
+
+Voir Code. Créer une enum permet de  pour preciser l'etat du programme. C'est mieux que deux booleans
+
+-- L'Exchanger est-il utilisable plus d'une fois ?
+
+Dans ce cas, non. Le code ne peut étre exécut que par 2 threads et donc une seul fois.
+
+############# Exercice 2 - Le déjeuner des philosophes ##################
+
+[-- Quel est le probléme du code ci-dessus ? Dans quelle(s) condition(s) se produit-il ? --]
+
+Pour manger, un philosophe a besoin de 2 fourchettes : celle qui se trouve à gauche de son assiette, 
+et celle qui se trouve à droite soit les deux fourchettes qui entourent sa propre assiette) ;
+Le  philosophe n  prend deux fourchettes et mange. Du coup, le philosophe n + 1 attend d'avoir deux fouchettes pour pouvoir manger.
+En plus, seul deux philosophes peuvent manger, et pas totalement en même temps.
+forks -> tableau de fourchettes.
+
+	Pour bien comprendre ce qui pose problème , on rédige le scénario suivant (numérotation des fourchettes en commençant a gauche du philosophe du haut -> fork[0]):
+	
+	--> Le thread 0 prend le lock sur  l'instruction forks[0] (1ere fourchette).
+	--> Le thread 4 prend le lock sur  l'instruction forks[4] (5eme fourchette).
+	--> Le thread 4 veut prendre le lock sur  l'instruction forks[0], mais le thread 0 l'a déja -> il attend.
+	
+	--> Le thread 3 prend le lock sur  l'instruction forks[3] (4eme fourchette).
+	--> Le thread 3 veut prendre le lock sur  l'instruction forks[4] (5eme fourchette), mais le thread 4 l'a déja ->  il attend.
+	--> Le thread 2 prend le lock sur   l'instruction forks[2]  (3eme fourchette).
+	
+	--> Le thread 2 veut prendre le lock sur  l'instruction forks[3] (4eme fourchette), mais le thread 3 l'a déja -> il attend.
+	--> Le thread 1 prend le lock sur   l'instruction forks[1] (2eme fourchette).
+	--> Le thread 1 veut prendre le lock sur   l'instruction forks[2] (3eme fourchette), mais le thread 2 l'a déja ->  il attend.
+	
+	--> Le thread 0 veut prendre le lock sur  l'instruction forks[1] (2eme fourchette), mais le thread 1 l'a déja -> il attend.
+
+Tous les threads sont entrain d'attendre ! 
+--> On observe donc une deadlock!
+
+[-- Est-il possible d'avoir deux philosophes qui mangent en méme temps ? Est-ce quelque chose qui est normal ou pas ? --]
+
+Il est possible d'avoir deux philosophe qui mangent en méme temps, a condition qu'ils ne prennent pas la meme fourchette et qu'il y ait un philosophe entre eux.
+
+[-- Modifier le code pour corriger le probléme. On veut que plusieurs philosophes puissent manger en méme temps. --]
+
+Voir Code.
+Pour ne plus se trouver dans une situation  de deadlock, on change les fourchettes pour le dernier philosophe (soit l'index 4)
+

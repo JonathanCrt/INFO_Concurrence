@@ -1,0 +1,24 @@
+### Exercice 1 ##
+
+Un Runnable sert à transferer du code.
+On remarque que le scheduler choisit d'exécuter nos thread dans un 
+ordre différent à chaque exécution.
+Du coup, les entiers ne sont pas dans un ordre chronologiques car 
+on ne sait comment sont exécuter les thread.
+
+
+### Exercice 3 ##
+
+Le nombre de threads augmente progressivement (ici de 16 à 21).
+Ensuite la JVM s'éteint ce qui signifie que tous les threads ont terminés leur calculs et sont mort : 
+c'est à dire qu'il n'y a plus de thread non-démon qui tourne.
+Le thread main n'échappe pas à la régle.
+
+### Exercice 4 ##
+
+Comme on ne peut contrôler l'ordre d'exécution des threads, ceux-ci s'exécutent en fonction de l'ordonnanceur.
+Avec La fonction recodée println(...) l'affichage d'un "hello + entier" est dephasé.
+Ce comportement n'apparait pas car System.out.println affiche l'objet String,  termine la ligne puis 
+écrit une chaine de séparation des lignes. 
+La chaîne de séparation des lignes est définie par la propriété système
+line.separator, et n'est pas nécessairement une nouvelle ligne caractère '\n' comme dans le méthode recodée printLn(...).
