@@ -1,0 +1,4 @@
+============== Exercice 2 ========================
+
+
+ 1.  La classe Point n'est pas thread safe à cause des getters et du sychnonized manquant dans la méthode isOrigin().

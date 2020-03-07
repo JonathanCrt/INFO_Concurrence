@@ -1,0 +1,44 @@
+============== Exercice 1 ========================
+
+
+1.
+	 0  0 : Le thread main est termine avant de scheduler le Thread t
+	 1 0 :  Le thread t est schedulé , execute l'operation a++, est dé-schedule, puis main
+	 1 1:  Le thread t est schedulé execute les deux instructions , puis le main 
+	 0 1 : Le thread t est schdulé, execute l'instruction b++  , il est deschdulé, main affiche (Le JIT inverse les deux lignes)
+	 
+2. 
+	
+	Comme la champ a n'est jamais utilisé le JIT supprime la premiere boucle for()
+	La valeur de a n'augmente jamais. On ne passe jamais la condition if (aucun affichage !)
+	
+	
+3.
+	il y a un data-race sur le champ i entre le thread main et t.
+	-> le thread main est schédulé
+	-> le thread main execute la boucle while de i  = 0 Ã  i = 999
+	-> Le thread main est déshédulé avant l'instruction system.out.println(...);
+	-> Le thread t reprend la main, il rentre dans la boucle , donc i  = 1000
+	-> A la fin du bloc/ l'instruction while(), le thread t est déschédulé
+	-> Le main reprend la main avec i = 1000 
+	-> TM execute l'affichage de l'element du tableau Ã  l'index 1000, donc on est hors des bornes du tableau
+	-> L'exception ArrayOutOfBoundException est levée
+	
+4.
+		-> Le thread main est déschédulé aprÃ¨s Ãªtre rentré dans le while(...) et avant l'instrcution sysout.
+		-> Le thread t est schédulé 
+		-> t affiche de thread 0 Ã  10 donc i = 11 (déshédulé)
+		
+		-> thread main reprend la main, i vaut 0 donc il affiche main 0 
+		-> Le thread main execute l'instruction i++ et i vaut 12 et affiche 
+		->Le thread main execute  i++ donc i = 13
+		-> Le thread t est schedulé , son i vaut 11, il 	affiche thread 11
+		-> il execute l'instruction i++ et i vaut 14 et affiche 
+	
+-> Le thread main est dé-schédulé avant d'affiche t[0] mais après avoir récupéré la valeur. 
+-> Le thread t est schédulé et affiche les 10 premières valeurs et effectue i++. 
+-> Donc i vaut 11 mais le thread t est dé-schédulé avant de faire l'affichage de t[11] mais après avoir récupéré la valeur de t[i]. 
+-> Le thread main est re-schédulé et affiche t[0] puis il incrément i qui vaut 12 et fait l'affichage. 
+-> Il incrémente à 13 et est dé-schédulé avant de faire l'affichage. 
+-> Le thread t est re-schédulé. 
+-> Il affiche t[11] puis incrémente i à 14 et affiche t[14].  
